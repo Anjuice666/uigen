@@ -18,6 +18,7 @@ jobs:
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
       pull-requests: read
@@ -31,16 +32,76 @@ jobs:
           fetch-depth: 1
 
       - name: Prepare Environment
+        env:
+            # NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+            MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+            # GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
         run: |
           curl -fsSL https://bun.sh/install | bash
           mkdir -p $HOME/.claude-code-router
           cat << 'EOF' > $HOME/.claude-code-router/config.json
           {
-            "log": true,
-            "NON_INTERACTIVE_MODE": true,
-            "OPENAI_API_KEY": "${{ secrets.MINIMAX_API_KEY }}",
-            "OPENAI_BASE_URL": "https://api.minimaxi.com/anthropic/v1/messages",
-            "OPENAI_MODEL": "MiniMax-M2.1"
+            "LOG": false,
+            "LOG_LEVEL": "debug",
+            "CLAUDE_PATH": "",
+            "HOST": "127.0.0.1",
+            "PORT": 3456,
+            "APIKEY": "",
+            "API_TIMEOUT_MS": "600000",
+            "PROXY_URL": "",
+            "transformers": [],
+            "Providers": [
+              # {
+              #   "name": "NVIDIA",
+              #   "api_base_url": "https://integrate.api.nvidia.com/v1/chat/completions",
+              #   "api_key": "$NVIDIA_API_KEY",
+              #   "models": [
+              #     "Qwen/Qwen3-Coder-480B-A35B-Instruct",
+              #     "Qwen/Qwen3-235B-A22B-Thinking-2507",
+              #     "ZhipuAI/GLM-4.5",
+              #     "z-ai/glm4.7",
+              #     "deepseek-ai/deepseek-r1",
+              #     "minimaxai/minimax-m2.1",
+              #     "meta/llama-4-maverick-17b-128e-instruct",
+              #     "meta/llama-4-scout-17b-16e-instruct",
+              #     "meta/llama-3.3-70b-instruct",
+              #     "qwen/qwen2.5-coder-32b-instruct"
+              #   ],
+              #   "transformer": {
+              #     "use": [
+              #       "OpenAI"
+              #     ]
+              #   }
+              # }
+              #   ,
+              {
+                "name": "MiniMax",
+                "api_base_url": "https://api.minimaxi.com/anthropic/v1/messages",
+                "api_key": "$MINIMAX_API_KEY",
+                "models": [
+                  "MiniMax-M2.1"
+                ],
+                "transformer": {
+                  "use": [
+                    "Anthropic"
+                  ]
+                }
+              }
+              #   ,
+              # {
+              #   "name": "GLM",
+              #   "api_base_url": "https://open.bigmodel.cn/api/anthropic/v1/messages",
+              #   "api_key": "$GLM_API_KEY",
+              #   "models": [
+              #     "glm-4.7"
+              #   ],
+              #   "transformer": {
+              #     "use": [
+              #       "Anthropic"
+              #     ]
+              #   }
+              # }
+            ]
           }
           EOF
         shell: bash
