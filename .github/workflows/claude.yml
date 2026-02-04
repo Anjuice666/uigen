@@ -80,7 +80,7 @@ jobs:
             set of tools to launch a browser and interact with the app.
           additional_permissions: |
             actions: read
-          claude_args: '--allowed-tools Bash(npm:*),Bash(sqlite3:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_navigate,mcp__playwright__browser_hover,mcp__playwright__browser_select_option,mcp__playwright__browser_fill_form,mcp__playwright__browser_press_key,mcp__playwright__browser_run_code,mcp__playwright__browser_click,mcp__playwright__browser_drag,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_tabs,mcp__playwright__browser_network_requests,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_close,mcp__playwright__browser_install,mcp__playwright__browser_resize'
+          claude_args: '--allowed-tools Bash(npm *),Bash(sqlite3 *),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_navigate,mcp__playwright__browser_hover,mcp__playwright__browser_select_option,mcp__playwright__browser_fill_form,mcp__playwright__browser_press_key,mcp__playwright__browser_run_code,mcp__playwright__browser_click,mcp__playwright__browser_drag,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_tabs,mcp__playwright__browser_network_requests,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_close,mcp__playwright__browser_install,mcp__playwright__browser_resize'
         env:
           ANTHROPIC_BASE_URL: http://localhost:3456
           MCP_CONFIG_JSON: |
