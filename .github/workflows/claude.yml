@@ -45,10 +45,13 @@ jobs:
           }
           EOF
         shell: bash
+      
+      - name: Install ajv dependencies
+        run: npm install ajv ajv-formats
 
       - name: Project Setup
         run: |
-          npm run setup
+          npm run setup 
           npm run dev:daemon
 
       - name: Start Claude Code Router
