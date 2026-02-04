@@ -53,6 +53,18 @@ jobs:
       - name: Start Claude Code Router
         run: |
           nohup ~/.bun/bin/bunx @musistudio/claude-code-router@1.0.8 start &
+          echo "Waiting for CCR to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:3456/health > /dev/null 2>&1; then
+              echo "CCR is ready!"
+              break
+            fi
+            sleep 1
+          done
+          if ! curl -s http://localhost:3456/health > /dev/null 2>&1; then
+            echo "CCR failed to start"
+            exit 1
+          fi
         shell: bash
 
       - name: Run Claude Code
