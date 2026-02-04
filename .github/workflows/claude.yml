@@ -18,12 +18,13 @@ jobs:
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
+    environment: production   # environment
     permissions:
-      contents: read        # 允许创建/推送分支与提交
-      pull-requests: read   # 允许创建/更新 PR
-      issues: read          # 允许更新 issue 评论
+      contents: write       # 允许创建/推送分支与提交
+      pull-requests: write  # 允许创建/更新 PR
+      issues: write         # 允许更新 issue 评论
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      actions: read         # Required for Claude to read CI results on PRs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -38,9 +39,9 @@ jobs:
           {
             "log": true,
             "NON_INTERACTIVE_MODE": true,
-            "api_key": "${{ secrets.GLM_API_KEY }}",
-            "api_base_url": "https://open.bigmodel.cn/api/anthropic/v1/messages",
-            "models": "glm-4.7"
+            "OPENAI_API_KEY": "${{ secrets.GLM_API_KEY }}",
+            "OPENAI_BASE_URL": "https://open.bigmodel.cn/api/anthropic/v1/messages",
+            "OPENAI_MODEL": "glm-4.7"
           }
           EOF
         shell: bash
@@ -52,38 +53,27 @@ jobs:
 
       - name: Start Claude Code Router
         run: |
-          nohup ~/.bun/bin/bunx @musistudio/claude-code-router@latest start &
-          echo "Waiting for CCR to start..."
-          for i in {1..30}; do
-            if curl -s http://localhost:3456/health > /dev/null 2>&1; then
-              echo "CCR is ready!"
-              break
-            fi
-            sleep 1
-          done
-          if ! curl -s http://localhost:3456/health > /dev/null 2>&1; then
-            echo "CCR failed to start"
-            exit 1
-          fi
+          nohup ~/.bun/bin/bunx @musistudio/claude-code-router@1.0.8 start &
         shell: bash
 
       - name: Run Claude Code
         id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_BASE_URL: http://localhost:3456
         with:
           anthropic_api_key: "any-string-is-ok"
-          prompt: |
+          # This is an optional setting that allows Claude to read CI results on PRs
+          # 可选：让 Claude 读 CI 结果
+          additional_permissions: |
+            actions: read
+          custom_instructions: |
             The project is already set up with all dependencies installed.
             The server is already running at localhost:3000. Logs from it
             are being written to logs.txt. If needed, you can query the
             db with the 'sqlite3' cli. If needed, use the mcp__playwright
             set of tools to launch a browser and interact with the app.
-          additional_permissions: |
-            actions: read
-          claude_args: '--allowed-tools Bash(npm *),Bash(sqlite3 *),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,mcp__playwright__browser_type,mcp__playwright__browser_navigate,mcp__playwright__browser_hover,mcp__playwright__browser_select_option,mcp__playwright__browser_fill_form,mcp__playwright__browser_press_key,mcp__playwright__browser_run_code,mcp__playwright__browser_click,mcp__playwright__browser_drag,mcp__playwright__browser_take_screenshot,mcp__playwright__browser_handle_dialog,mcp__playwright__browser_tabs,mcp__playwright__browser_network_requests,mcp__playwright__browser_console_messages,mcp__playwright__browser_wait_for,mcp__playwright__browser_close,mcp__playwright__browser_install,mcp__playwright__browser_resize'
-        env:
-          ANTHROPIC_BASE_URL: http://localhost:3456
-          MCP_CONFIG_JSON: |
+          mcp_config: |
             {
               "mcpServers": {
                 "playwright": {
@@ -96,4 +86,17 @@ jobs:
                 }
               }
             }
-
+          # 允许用 git / bun / npm 等工具；按需收紧
+          allowed_tools: 
+            "Bash(npm:*),
+             Bash(sqlite3:*),
+             mcp__playwright__browser_snapshot,mcp__playwright__browser_click,
+             mcp__playwright__browser_type,mcp__playwright__browser_navigate,
+             mcp__playwright__browser_hover,mcp__playwright__browser_select_option,
+             mcp__playwright__browser_fill_form,mcp__playwright__browser_press_key,
+             mcp__playwright__browser_run_code,mcp__playwright__browser_click,
+             mcp__playwright__browser_drag,mcp__playwright__browser_take_screenshot,
+             mcp__playwright__browser_handle_dialog,mcp__playwright__browser_tabs,
+             mcp__playwright__browser_network_requests,mcp__playwright__browser_console_messages,
+             mcp__playwright__browser_wait_for,mcp__playwright__browser_close,mcp__playwright__browser_install,
+             mcp__playwright__browser_resize"
