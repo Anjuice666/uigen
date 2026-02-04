@@ -38,9 +38,9 @@ jobs:
           {
             "log": true,
             "NON_INTERACTIVE_MODE": true,
-            "OPENAI_API_KEY": "${{ secrets.GLM_API_KEY }}",
-            "OPENAI_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
-            "OPENAI_MODEL": "glm-4.7"
+            "api_key": "${{ secrets.GLM_API_KEY }}",
+            "api_base_url": "https://open.bigmodel.cn/api/anthropic/v1/messages",
+            "models": "glm-4.7"
           }
           EOF
         shell: bash
