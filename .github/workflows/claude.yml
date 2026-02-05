@@ -64,6 +64,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: "any-string-is-ok"
+          branch_prefix: "claude-"
           track_progress: true
           prompt: |
             The project is already set up with all dependencies installed.
